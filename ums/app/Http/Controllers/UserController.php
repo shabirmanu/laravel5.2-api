@@ -49,7 +49,9 @@ class UserController extends AppBaseController
      */
     public function create()
     {
-        return view('users.create');
+        $apps = App::lists('app_name','apps.app_key');
+        $roles = Role::lists('display_name','id');
+        return view('users.create', compact('apps','roles'));
     }
 
     /**
@@ -64,6 +66,9 @@ class UserController extends AppBaseController
         $input = $request->all();
 
         $user = $this->userRepository->create($input);
+
+        $user->apps()->sync($request->input('app_list'));
+        $user->roles()->sync($request->input('role_list'));
 
         Flash::success('User saved successfully.');
 
@@ -146,6 +151,35 @@ class UserController extends AppBaseController
      *
      * @return Response
      */
+    public function delegateUser($id)
+    {
+        $users = $this->userRepository->findWhereNotIn('id', [$id], ['id', 'name']);
+
+        $usersArr = [];
+
+        foreach($users->toArray() as $user_id => $user) {
+            $usersArr[$user['id']] =$user['name'];
+        }
+
+
+        $articles = $this->userRepository->articles($id);
+        if($articles['status'] == 'success') {
+            return view('users.delegate', compact('usersArr' , 'articles','id'));
+        }
+        else {
+            $e = json_decode($articles['status']);
+            return view('users.delegate', compact('e','id'));
+        }
+
+    }
+
+    /**
+     * Remove the specified User from storage.
+     *
+     * @param  int $id
+     *
+     * @return Response
+     */
     public function destroy($id)
     {
         $user = $this->userRepository->findWithoutFail($id);
@@ -161,5 +195,17 @@ class UserController extends AppBaseController
         Flash::success('User deleted successfully.');
 
         return redirect(route('users.index'));
+    }
+
+    public function delegateAndDestroy(Request $request) {
+        $ret = $this->userRepository->delegateArticles($request['user_id'], $request['delegate_id']);
+        if($ret['data'] == 'Success') {
+            return $this->destroy($request['user_id']);
+        }
+        return redirect(route('users.index'))->with(
+            [
+                'flash_message' => 'Error deleting user',
+            ]
+        );
     }
 }

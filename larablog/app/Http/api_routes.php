@@ -10,6 +10,8 @@
 */
 
 
+Route::get('articles/delegate', 'ArticleAPIController@delegateArticles');
+Route::get('articles/{user}', 'ArticleAPIController@userArticles');
 Route::resource('tasks', 'TaskAPIController');
 
 Route::resource('articles', 'ArticleAPIController');

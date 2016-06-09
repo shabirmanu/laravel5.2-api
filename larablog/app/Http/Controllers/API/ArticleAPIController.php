@@ -127,4 +127,59 @@ class ArticleAPIController extends AppBaseController
 
         return $this->sendResponse($id, 'Article deleted successfully');
     }
+
+    /**
+     * Display the users Article.
+     * GET|HEAD /articles/{user_id}
+     *
+     * @param  int $user_id
+     *
+     * @return Response
+     */
+    public function userArticles($user_id)
+    {
+        /** @var Article $article */
+        $articles = $this->articleRepository->findByField('user_id', $user_id)->toArray();
+
+        if (empty($articles)) {
+            return Response::json(ResponseUtil::makeError('This user has no article'), 400);
+        }
+
+        return $this->sendResponse($articles, 'Article retrieved successfully');
+    }
+
+    public function delegateArticles(Request $request)
+    {
+        $input = $request->all();
+
+        if(empty($input)) {
+            return Response::json(ResponseUtil::makeError('Ids not provided!'), 400);
+        }
+
+        if(empty($input['user_id']) && empty($input['delegate_id'])) {
+            return Response::json(ResponseUtil::makeError('User ID and Delegate User ID not provided!'), 400);
+        }
+
+        if(!empty($input['user_id']) && empty($input['delegate_id'])) {
+            $articles = $this->articleRepository->findWhere(['user_id' => $input['user_id']])->toArray();
+            if(!empty($articles)) {
+                foreach ($articles as $article) {
+                    $this->articleRepository->delete($article['id']);
+                }
+                return $this->sendResponse('Success', 'User Delegation Failed! Articles deleted');
+            }
+        }
+
+        $articles = $this->articleRepository->findWhere(['user_id' => $input['user_id']])->toArray();
+
+        if(!empty($articles)) {
+            foreach ($articles as $article) {
+                $this->articleRepository->update(['user_id' => $input['delegate_id']], $article['id']);
+            }
+            return $this->sendResponse('Success', 'User Delegation successful');
+        }
+
+        return Response::json(ResponseUtil::makeError('Error updating records!'), 400);
+
+    }
 }

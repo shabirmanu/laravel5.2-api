@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\User;
+use App\Models\Role;
+use App\Models\User;
 use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
@@ -63,11 +64,21 @@ class AuthController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
             'api_token'=> str_random(60),
         ]);
+
+        $role = Role::where('name','administrator')->first();
+        if(!empty($role)) {
+            $role_arr = $role->toArray();
+            $role_id = $role_arr['id'];
+            $user->roles()->attach($role_id);
+        }
+
+        return $user;
+
     }
 }

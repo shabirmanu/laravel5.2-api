@@ -34,7 +34,7 @@ Route::get('/home', 'HomeController@index');
 |--------------------------------------------------------------------------
 */
 
-Route::group(['prefix' => 'api', 'namespace' => 'API', 'middleware' => 'auth:api'], function () {
+Route::group(['prefix' => 'api', 'namespace' => 'API'], function () {
     Route::group(['prefix' => 'v1'], function () {
 
         require('api_routes.php');

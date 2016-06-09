@@ -63,11 +63,15 @@ class ArticlesController extends Controller
    * @param \App\Http\Requests\ArticleRequest $request
    * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
    */
-  public function store(ArticleRequest $request) {
+  public function store(ArticleRequest $request, Article $article) {
 
-    $user = \Auth::user();
+    $user = \Session::get('user');
 
-    $article = $user->articles()->create($request->all());
+    $all = $request->input();
+    $all['user_id'] = $user->id;
+
+    $article = $article->create($all);
+
 
 
     $existingTags = $this->checkAndCreateNewTags($request->input('tag_list'));

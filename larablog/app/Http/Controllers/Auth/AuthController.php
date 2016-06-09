@@ -71,7 +71,7 @@ class AuthController extends Controller
     protected function create(array $data)
     {
 
-      $endpoint = 'http://localhost:8080/api/';
+      $endpoint = env('UMS_APP_URL', 'http://localhost:8080/').'/api/';
       $httpClient = new Client(['base_uri' => $endpoint]);
       $post_data = array(
         'name' => $data['name'],
@@ -139,7 +139,7 @@ class AuthController extends Controller
         $credentials = $this->getCredentials($request);
 
 
-        $endpoint = 'http://localhost:8080/api/v1';
+        $endpoint = env('UMS_APP_URL', 'http://localhost:8080/').'/api/v1';
         $httpClient = new Client(['base_uri' => $endpoint]);
         $post_data = array(
           'email' => $credentials['email'],

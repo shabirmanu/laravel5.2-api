@@ -34,6 +34,15 @@ Route::group(['prefix' => 'api', 'namespace' => 'API'], function () {
 
 
 Route::group(['middleware' =>['has_perm:administer-permissions']], function() {
+
+    Route::get('delegate/{users}',
+        ['as' => 'users.delegate', 'uses' => 'UserController@delegateUser'
+    ]);
+
+    Route::post('delegate-destroy',
+        ['as' => 'users.delegateAndDestroy', 'uses' => 'UserController@delegateAndDestroy'
+    ]);
+
     Route::resource('permissions', 'PermissionController');
     Route::resource('roles', 'RoleController');
     Route::resource('users', 'UserController');
